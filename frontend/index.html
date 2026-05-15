@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fleetify - Fleet Maintenance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">Fleetify</a>
+      <span class="navbar-text text-white-50 small">Fleet Maintenance System</span>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <section class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Login Simulasi</h5>
+        <p class="text-muted small mb-3">Pilih akun untuk menguji alur SA dan Approval (header X-User-ID).</p>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">
+            <label for="userSelect" class="form-label">Pengguna</label>
+            <select id="userSelect" class="form-select"></select>
+          </div>
+          <div class="col-md-6">
+            <div id="currentUserBadge" class="alert alert-secondary mb-0 py-2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <ul class="nav nav-tabs mb-3" id="mainTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-panel" type="button" role="tab" aria-controls="history-panel" aria-selected="true">Riwayat Laporan</button>
+      </li>
+      <li class="nav-item" role="presentation" id="create-tab-item">
+        <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-panel" type="button" role="tab" aria-controls="create-panel" aria-selected="false">Buat Laporan</button>
+      </li>
+      <li class="nav-item" role="presentation" id="approval-tab-item">
+        <button class="nav-link" id="approval-tab" data-bs-toggle="tab" data-bs-target="#approval-panel" type="button" role="tab" aria-controls="approval-panel" aria-selected="false">Persetujuan</button>
+      </li>
+      <li class="nav-item" role="presentation" id="complete-tab-item">
+        <button class="nav-link" id="complete-tab" data-bs-toggle="tab" data-bs-target="#complete-panel" type="button" role="tab" aria-controls="complete-panel" aria-selected="false">Selesaikan Pekerjaan</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="history-panel">
+        <section class="card shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 class="card-title mb-0">F-04 Riwayat Laporan</h5>
+              <button type="button" id="exportCsvBtn" class="btn btn-outline-success btn-sm">Export CSV (Bonus)</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama SA</th>
+                    <th>Nomor Polisi</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="tab-pane fade" id="create-panel">
+        <section class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">F-01 Buat Laporan Awal (SA)</h5>
+            <form id="createReportForm" class="row g-3">
+              <div class="col-md-6">
+                <label for="licensePlateInput" class="form-label">Nomor Polisi</label>
+                <input type="text" id="licensePlateInput" class="form-control" placeholder="B 1234 XYZ" required>
+                <div class="form-text">Ketik nomor polisi.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="vehicleModelInput" class="form-label">Model Kendaraan</label>
+                <input type="text" id="vehicleModelInput" class="form-control" list="vehicleModelList" placeholder="Toyota Avanza">
+                <datalist id="vehicleModelList"></datalist>
+                <div class="form-text">Pilih dari daftar model yang pernah dipakai, atau ketik baru.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="odometerInput" class="form-label">Odometer (km)</label>
+                <input type="number" id="odometerInput" class="form-control" min="1" required>
+              </div>
+              <div class="col-12">
+                <label for="complaintInput" class="form-label">Keluhan</label>
+                <textarea id="complaintInput" class="form-control" rows="3" required></textarea>
+              </div>
+              <div class="col-md-6">
+                <label for="initialPhotoInput" class="form-label">Foto Awal (simulasi upload)</label>
+                <input type="file" id="initialPhotoInput" class="form-control" accept="image/*">
+              </div>
+              <div class="col-12">
+                <h6>Estimasi Part / Jasa</h6>
+                <datalist id="itemNameListPart"></datalist>
+                <datalist id="itemNameListService"></datalist>
+                <div id="estimateItemsContainer" class="border rounded p-3 bg-light"></div>
+                <div class="mt-2 d-flex flex-wrap gap-2">
+                  <button type="button" id="addEstimateRowBtn" class="btn btn-sm btn-outline-primary">+ Dari Master</button>
+                  <button type="button" id="addManualItemBtn" class="btn btn-sm btn-outline-secondary">+ Input Manual (Part/Jasa)</button>
+                </div>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary">Kirim Laporan (PENDING_APPROVAL)</button>
+              </div>
+            </form>
+            <div id="createAlert" class="mt-3"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="tab-pane fade" id="approval-panel">
+        <section class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">F-02 Persetujuan (Approval)</h5>
+            <p class="text-muted small">Laporan berstatus PENDING_APPROVAL menunggu persetujuan Anda.</p>
+            <div id="pendingApprovalList"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="tab-pane fade" id="complete-panel">
+        <section class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">F-03 Selesaikan Pekerjaan (SA)</h5>
+            <p class="text-muted small">Laporan APPROVED dapat diselesaikan dengan upload foto bukti.</p>
+            <div id="approvedReportsList"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="reportDetailModal" class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Detail Laporan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" title="Close"></button>
+          </div>
+          <div class="modal-body" id="reportDetailBody"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/dom.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

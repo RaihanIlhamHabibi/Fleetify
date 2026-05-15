@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fleetify-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: fleetify
+      MYSQL_USER: fleetify
+      MYSQL_PASSWORD: fleetify_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/02-init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ufleetify", "-pfleetify_secret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fleetify-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: fleetify
+      DB_PASSWORD: fleetify_secret
+      DB_NAME: fleetify
+      APP_PORT: 8080
+      UPLOAD_DIR: /app/uploads
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
+      RUN_SEEDER: "false"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  uploads_data:

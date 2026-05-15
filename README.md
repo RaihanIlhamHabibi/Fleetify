@@ -16,11 +16,11 @@ docker-compose up --build
 
 👉 Buka browser: http://localhost:8080
 
-Data awal di-seed otomatis via init.sql (Docker) dan fallback seeder Go jika database kosong.
+Data awal otomatis di-seed dari init.sql (Docker) atau fallback seeder Go jika database kosong.
 
 🔐 Environment Variables
 
-Salin .env.example ke .env (opsional untuk Docker; variabel sudah di-set di docker-compose.yml).
+Salin .env.example ke .env (opsional untuk Docker).
 
 Variable	Default	Keterangan
 DB_HOST	mysql	Host MySQL
@@ -41,29 +41,28 @@ Username	Role	User ID (X-User-ID)
 advisor_sa	SA	1
 manager_approval	APPROVAL	2
 
-Di UI, pilih user dari dropdown Login Simulasi.
-Header X-User-ID dikirim otomatis ke API.
+Login via dropdown Login Simulasi, header X-User-ID otomatis dikirim ke API.
 
 🔄 Alur Uji
 Login sebagai advisor_sa → Buat laporan
 Login sebagai manager_approval → Approve laporan
-Kembali ke advisor_sa → Upload foto & selesaikan pekerjaan
-Lihat Riwayat Laporan + Export CSV
+Kembali ke advisor_sa → Upload bukti & selesaikan pekerjaan
+Lihat Riwayat Laporan → Export CSV (bonus feature)
 🔌 API Endpoints
 
-Semua endpoint /api/reports* (kecuali health/master) memerlukan header:
+Semua endpoint /api/reports* (kecuali health/master) membutuhkan header:
 
 X-User-ID: <user_id>
 Method	Endpoint	Role	Keterangan
 GET	/api/health	-	Health check
-GET	/api/users	-	Daftar user (login UI)
+GET	/api/users	-	Daftar user
 GET	/api/vehicles	-	Master kendaraan
 GET	/api/master-items	-	Master part/jasa
-GET	/api/reports	SA, APPROVAL	Riwayat laporan (F-04)
+GET	/api/reports	SA, APPROVAL	Riwayat laporan
 GET	/api/reports/:id	SA, APPROVAL	Detail laporan
-POST	/api/reports	SA	Buat laporan (header + detail)
-PATCH	/api/reports/:id/approve	APPROVAL	Setujui → APPROVED
-PATCH	/api/reports/:id/complete	SA	Selesaikan → COMPLETED
+POST	/api/reports	SA	Buat laporan
+PATCH	/api/reports/:id/approve	APPROVAL	Approve laporan
+PATCH	/api/reports/:id/complete	SA	Selesaikan laporan
 📦 POST /api/reports
 {
   "vehicle_id": 1,
@@ -73,9 +72,7 @@ PATCH	/api/reports/:id/complete	SA	Selesaikan → COMPLETED
     { "item_id": 1, "quantity": 2 }
   ]
 }
-
-Multipart support:
-
+Multipart Support
 vehicle_id
 odometer
 complaint
@@ -88,12 +85,12 @@ price_snapshot diambil dari master_items.
 🏗️ Struktur Proyek
 ├── backend/          # Go + Fiber + GORM (Repository Pattern)
 ├── frontend/         # Vanilla JS + Bootstrap 5
-├── schema.sql
-├── init.sql
+├── schema.sql        # Skema InnoDB + FK
+├── init.sql          # Data seeder SQL (Docker)
 ├── docker-compose.yml
 └── Dockerfile
 💻 Development Lokal (tanpa Docker)
-Jalankan MySQL 8
+Setup MySQL 8
 → import schema.sql + init.sql
 Jalankan backend:
 cd backend
@@ -104,7 +101,7 @@ http://localhost:8080
  Repository GitHub Public
  Minimal 5 commit history
  schema.sql / init.sql / seeder otomatis
- README rapi & lengkap
+ README lengkap
 📄 Lisensi
 
 Proyek technical test — Fleetify internal recruitment.
